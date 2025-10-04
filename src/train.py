@@ -1,13 +1,12 @@
-# === Imports ===
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_curve, auc
 from sklearn.ensemble import RandomForestClassifier
 
 # === Helper Functions ===
@@ -93,13 +92,49 @@ if __name__ == '__main__':
     print('Accuracy:', accuracy_score(y_test, y_pred))
     print(classification_report(y_test, y_pred))
 
-    # Save metrics to a text file (easy to check later / share with supervisors)
+    # === ROC Curve + AUC ===
+    # Compute probabilities for ROC curve (binary classification: Tumor vs Normal)
+    try:
+        probs = pipe.predict_proba(X_test)[:, 1]  # probability of 'Tumor'
+        fpr, tpr, _ = roc_curve(y_test, probs, pos_label='Tumor')
+        roc_auc = auc(fpr, tpr)
+
+        plt.figure()
+        plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'AUC = {roc_auc:.2f}')
+        plt.plot([0,1], [0,1], color='navy', lw=2, linestyle='--')
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC Curve')
+        plt.legend(loc="lower right")
+
+        os.makedirs('results', exist_ok=True)
+        plt.savefig('results/roc_curve.png', dpi=200)
+        plt.close()
+        print(f"AUC = {roc_auc:.2f}")
+    except Exception as e:
+        print("ROC/AUC not available for this classifier:", e)
+
+    # === Save metrics to a text file (easy to check later / share with supervisors) ===
     os.makedirs('results', exist_ok=True)
     with open('results/metrics.txt', 'w') as f:
         f.write(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}\n\n")
         f.write(classification_report(y_test, y_pred))
+        try:
+            f.write(f"\nAUC: {roc_auc:.4f}\n")
+        except NameError:
+            f.write("\nAUC: N/A (no predict_proba)\n")
     print("Saved results -> results/metrics.txt")
 
     # Save confusion matrix plot + PCA visualization
     plot_confusion(y_test, y_pred, labels=sorted(set(y)))
     plot_pca(X_test, y_test)
+
+    # === Stratified Cross-Validation (5-fold) ===
+    # Evaluate pipeline more robustly across 5 different splits
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv_scores = cross_val_score(pipe, X, y, cv=cv, scoring='accuracy')
+    print(f"Cross-validation Accuracy: {cv_scores.mean():.3f} ± {cv_scores.std():.3f}")
+
+    # Append CV results to metrics file
+    with open('results/metrics.txt', 'a') as f:
+        f.write(f"Cross-validation Accuracy: {cv_scores.mean():.3f} ± {cv_scores.std():.3f}\n")

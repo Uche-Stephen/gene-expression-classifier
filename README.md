@@ -37,10 +37,10 @@ python src\train.py
 ```
 ## What you’ll get in results/:
 
-pca.png – PCA of the test set, colored by label
-confusion_matrix.png – predicted vs true labels
-roc_curve.png – ROC curve with AUC
-metrics.txt – accuracy, classification report, AUC, and cross-validation results
+- pca.png – PCA of the test set, colored by label
+- confusion_matrix.png – predicted vs true labels
+- roc_curve.png – ROC curve with AUC
+- metrics.txt – accuracy, classification report, AUC, and cross-validation results
 
 ## Try another model (1-line change)
 Open src/train.py and replace the classifier:
@@ -57,15 +57,15 @@ python src\train.py
 Compare accuracies, AUC, and CV results in results/metrics.txt.
 
 ## What I learned
-Handling tabular omics data (samples × genes)
-Preprocessing with StandardScaler
-Basic PCA for structure visualization
-Training & evaluating classifiers with confusion matrix, AUC, and CV
-Importance of cross-validation for reliable performance estimates
+- Handling tabular omics data (samples × genes)
+- Preprocessing with StandardScaler
+- Basic PCA for structure visualization
+- Training & evaluating classifiers with confusion matrix, AUC, and CV
+- Importance of cross-validation for reliable performance estimates
 
 ## Next Steps / Future Improvements
-Swap the synthetic data for a small real dataset (GEO, TCGA subset, or Kaggle)
-Add hyperparameter tuning (GridSearchCV/RandomizedSearchCV)
-Add feature importance (e.g., top predictive genes)
-Export a clean results/metrics.csv with multiple model comparisons
-Package the pipeline as a small CLI script
+- Swap the synthetic data for a small real dataset (GEO, TCGA subset, or Kaggle)
+- Add hyperparameter tuning (GridSearchCV/RandomizedSearchCV)
+- Add feature importance (e.g., top predictive genes)
+- Export a clean results/metrics.csv with multiple model comparisons
+- Package the pipeline as a small CLI script
